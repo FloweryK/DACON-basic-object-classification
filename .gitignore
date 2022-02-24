@@ -1,0 +1,6 @@
+# datasets
+data/
+*.jpg
+
+# Windows
+__pycache__
