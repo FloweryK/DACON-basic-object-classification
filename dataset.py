@@ -35,9 +35,17 @@ class ObjectDataset(Dataset):
         if index in self.cache:
             return self.cache[index]
         else:
+            # get path and target
             path, target = self.paths[index]
+
+            # load image
             img = cv2.imread(path)
+
+            # (optional) normalize
+
+            # (optional) save result as cache
             self.cache[index] = (img, target)
+
             return img, target
         
 
