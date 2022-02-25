@@ -4,3 +4,5 @@ data/
 
 # Windows
 __pycache__
+
+.vscode

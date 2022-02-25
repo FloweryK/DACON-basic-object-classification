@@ -23,8 +23,8 @@ def load_paths(data_dir):
 
 
 class ObjectDataset(Dataset):
-    def __init__(self):
-        self.paths = load_paths(os.path.join('data', 'train'))
+    def __init__(self, data_path):
+        self.paths = load_paths(data_path)
         self.len = len(self.paths)
         self.cache = {}
 
@@ -41,8 +41,6 @@ class ObjectDataset(Dataset):
             # load image
             img = cv2.imread(path)
 
-            # (optional) normalize
-
             # (optional) save result as cache
             self.cache[index] = (img, target)
 
@@ -51,13 +49,17 @@ class ObjectDataset(Dataset):
 
 
 if __name__ == "__main__":
-    object_dataset = ObjectDataset()
+    data_path = os.path.join("data", "train")
+    object_dataset = ObjectDataset(data_path)
 
     # data loading test
+    start = time.time()
     img, target = object_dataset[0]
-    print(img)
-    print(img.shape)
-    print(target)
+    end = time.time()
+    print('data:', img)
+    print('data shape:', img.shape)
+    print('target:', target)
+    print('loading time:', (end - start)*1000, 'ms')
 
     # cache test
     _, _ = object_dataset[0]
