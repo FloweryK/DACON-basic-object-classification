@@ -16,7 +16,7 @@ class Model(nn.Module):
         super().__init__()
         self.layer1 = nn.Sequential(
             nn.Linear(32*32*3, 10),
-            # nn.Softmax(dim=0) # nn.CrossEntropyLoss already includes softmax
+            nn.Softmax(dim=0) # nn.CrossEntropyLoss already includes softmax
         )
     
     def forward(self, x):
@@ -27,11 +27,12 @@ class Model(nn.Module):
 
 
 if __name__ == "__main__":
-    import cv2
-
+    from dataset import ObjectDataset
+    
+    dataset = ObjectDataset(os.path.join("data", "train"))
+    img, target = dataset[0]
+    
     model = Model()
-    x = cv2.imread(os.path.join('data', 'train', 'airplane', '0000.jpg'))
-
-    x = model(x)
-    print(x)
+    prob = model(img)
+    print(prob)
     
