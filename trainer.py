@@ -81,6 +81,6 @@ if __name__ == "__main__":
 
     trainset, valiset, testset = random_split(dataset, [n_train, n_vali, n_test])
 
-    trainer = Trainer(TrainerConfig, model, trainset, trainset, trainset)
+    trainer = Trainer(TrainerConfig, model, trainset, valiset, testset)
     trainer.run()
     
