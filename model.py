@@ -5,7 +5,7 @@ class Model(nn.Module):
         super().__init__()
         self.layer1 = nn.Sequential(
             nn.Flatten(start_dim=1),    # to reshape with considering batch size
-            nn.Linear(1, 10),
+            nn.Linear(32*32*3, 10),
             # nn.Softmax(dim=0)           # nn.CrossEntropyLoss already includes softmax
         )
     
