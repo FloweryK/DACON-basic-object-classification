@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -20,6 +21,8 @@ class Trainer:
         def run_epoch(dataset, mode):
             # flag for train mode or not
             is_train = mode == "train"
+            n_correct = 0
+            n_false = 0
 
             # set dataloader
             dataloader = DataLoader(
@@ -43,6 +46,11 @@ class Trainer:
                     prob = self.model(imgs)
                     loss = F.cross_entropy(prob.view(-1, prob.size(-1)), targets.view(-1))
                     losses.append(loss.item())
+
+                    __check = torch.argmax(prob.view(-1, prob.size(-1)), axis=1) == targets.view(-1)
+                    __correct = torch.sum(__check)
+                    n_correct += __correct.item()
+                    n_false += len(__check) - __correct.item()
                 
                 # if training, update parameters
                 if is_train:
@@ -50,7 +58,7 @@ class Trainer:
                     loss.backward()
                     self.optimizer.step()
                 
-                pbar.set_description(f'iter {it}: {mode} loss {loss.item():.5f}')
+                pbar.set_description(f'iter {it}: {mode} loss {loss.item() if is_train else float(np.mean(losses)):.5f} acc {n_correct / (n_correct + n_false):.5f}')
         
         for epoch in range(self.config.num_epochs):
             print(f"epoch {epoch}")
