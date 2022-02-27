@@ -28,6 +28,9 @@ class ObjectDataset(Dataset):
                     if config.is_norm:
                         img -= np.array(config.norm_mean)
                         img *= 1 / np.array(config.norm_std)
+                    
+                    # (optional) roll axis
+                    img = np.moveaxis(img, -1, 0)
 
                     # save img to dataset
                     self.data[i] = (img, target)
@@ -48,7 +51,7 @@ class ObjectDataset(Dataset):
 
 if __name__ == "__main__":
     from config import DatasetConfig
-    
+
     trainset = ObjectDataset(DatasetConfig())
     img, target = trainset[0]
     print(len(trainset))

@@ -4,9 +4,15 @@ class Model(nn.Module):
     def __init__(self):
         super().__init__()
         self.layer1 = nn.Sequential(
-            nn.Flatten(start_dim=1),    # to reshape with considering batch size
-            nn.Linear(32*32*3, 10),
+            # nn.Flatten(start_dim=1),    # to reshape with considering batch size
+            # nn.Linear(32*32*3, 10),
             # nn.Softmax(dim=0)           # nn.CrossEntropyLoss already includes softmax
+            nn.Conv2d(3, 64, kernel_size=3),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(),
+
+            nn.Flatten(start_dim=1),
+            nn.Linear(57600, 10)
         )
     
     def forward(self, x):
