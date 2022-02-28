@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 
@@ -16,9 +17,10 @@ class Trainer:
         # TODO: locate this line to proper location
         self.model = self.model.to(self.config.device)
         self.optimizer = torch.optim.Adam(params=self.model.parameters(), lr=self.config.lr)
+        self.writer = SummaryWriter()
     
     def run(self):
-        def run_epoch(dataset, mode):
+        def run_epoch(epoch, dataset, mode):
             # flag for train mode or not
             is_train = mode == "train"
             n_correct = 0
@@ -58,13 +60,19 @@ class Trainer:
                     loss.backward()
                     self.optimizer.step()
                 
-                pbar.set_description(f'iter {it}: {mode} loss {loss.item() if is_train else float(np.mean(losses)):.5f} acc {n_correct / (n_correct + n_false):.5f}')
+                # update desciption on progress bar
+                loss_value = loss.item() if is_train else float(np.mean(losses))
+                acc = n_correct / (n_correct + n_false)
+                pbar.set_description(f'epoch {epoch} iter {it}: {mode} loss {loss_value:.5f} acc {acc:.5f}')
+                
+            # update tensorboard
+            self.writer.add_scalar(f'Loss/{mode}', loss_value, epoch)
+            self.writer.add_scalar(f'Acc/{mode}', acc, epoch)
         
         for epoch in range(self.config.num_epochs):
-            print(f"epoch {epoch}")
-            run_epoch(self.trainset, "train")
-            run_epoch(self.valiset, "vali")
-            run_epoch(self.testset, "test")
+            run_epoch(epoch, self.trainset, "train")
+            run_epoch(epoch, self.valiset, "vali")
+            run_epoch(epoch, self.testset, "test")
                 
 
 if __name__ == "__main__":
