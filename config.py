@@ -20,6 +20,7 @@ class TrainerConfig:
 
     print(f'device: {device}')
     print(f'lr: {lr}')
+    print(f'weight_decay: {weight_decay}')
     print(f'batch_size: {batch_size}')
     print(f'num_workers: {num_workers}')
     print(f'num_epochs: {num_epochs}')
