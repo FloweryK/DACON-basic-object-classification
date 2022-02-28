@@ -16,3 +16,11 @@ class TrainerConfig:
     num_epochs = 100
     shuffle=True
     pin_memory=True
+
+    print(f'device: {device}')
+    print(f'lr: {lr}')
+    print(f'batch_size: {batch_size}')
+    print(f'num_workers: {num_workers}')
+    print(f'num_epochs: {num_epochs}')
+    print(f'shuffle: {shuffle}')
+    print(f'pin_memory: {pin_memory}')
