@@ -68,6 +68,7 @@ class Trainer:
             # update tensorboard
             self.writer.add_scalar(f'Loss/{mode}', loss_value, epoch)
             self.writer.add_scalar(f'Acc/{mode}', acc, epoch)
+            self.writer.add_graph(self.model, imgs)
         
         for epoch in range(self.config.num_epochs):
             run_epoch(epoch, self.trainset, "train")
@@ -77,7 +78,7 @@ class Trainer:
 
 if __name__ == "__main__":
     from torch.utils.data import random_split
-    from model import Model
+    from models.CNNv1 import Model
     from dataset import ObjectDataset
     from config import DatasetConfig, TrainerConfig
 
