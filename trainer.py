@@ -19,7 +19,10 @@ class Trainer:
 
         # TODO: locate this line to proper location
         self.model = self.model.to(self.config.device)
-        self.optimizer = torch.optim.Adam(params=self.model.parameters(), lr=self.config.lr)
+        self.optimizer = torch.optim.Adam(
+            params=self.model.parameters(), 
+            lr=self.config.lr, 
+            weight_decay=self.config.weight_decay)
         self.writer = SummaryWriter()
     
     def run(self):
