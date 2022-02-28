@@ -52,6 +52,7 @@ class Trainer:
                     loss = F.cross_entropy(prob.view(-1, prob.size(-1)), targets.view(-1))
                     losses.append(loss.item())
 
+                    # check metrics
                     __check = torch.argmax(prob.view(-1, prob.size(-1)), axis=1) == targets.view(-1)
                     __correct = torch.sum(__check)
                     n_correct += __correct.item()
