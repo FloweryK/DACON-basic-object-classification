@@ -46,9 +46,9 @@ class ObjectDataset(Dataset):
                     # read img and change from int to float
                     img_org = cv2.imread(file_path)
 
-                    for _ in range(config.aug_ratio):
+                    for j in range(config.aug_ratio):
                         # (optional) data augmentation
-                        img = t(img_org) if config.aug_ratio > 1 else img_org
+                        img = t(img_org) if (config.aug_ratio > 1) and (j > 0) else img_org
 
                         # (optional) normalize
                         img = img.astype(np.float64)
