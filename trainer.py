@@ -1,8 +1,11 @@
+from operator import is_
 import numpy as np
 import torch
+import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from torchvision.utils import make_grid
 from tqdm import tqdm
 
 
@@ -68,8 +71,22 @@ class Trainer:
             # update tensorboard
             self.writer.add_scalar(f'Loss/{mode}', loss_value, epoch)
             self.writer.add_scalar(f'Acc/{mode}', acc, epoch)
-            self.writer.add_graph(self.model, imgs)
+
+            if is_train:
+                # if this is the first epoch, save graph
+                if epoch == 0:
+                    self.writer.add_graph(self.model, imgs)
+
+                # update kernel visualizations
+                for name, module in self.model.named_modules():
+                    if isinstance(module, nn.Conv2d):
+                        weights = module.weight.detach()
+                        weights = weights.abs().mean(axis=1).view(-1, 1, *weights.shape[2:])
+
+                        img_grid = make_grid(weights, nrow=16)
+                        self.writer.add_image(f"{name}", img_grid, epoch)
         
+        # run 
         for epoch in range(self.config.num_epochs):
             run_epoch(epoch, self.trainset, "train")
             run_epoch(epoch, self.valiset, "vali")
