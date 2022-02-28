@@ -4,43 +4,88 @@ class Model(nn.Module):
     def __init__(self):
         super().__init__()
         self.layer1 = nn.Sequential(
-            # CNN Block 
-            nn.Conv2d(3, 256, kernel_size=3, padding=1),
-            nn.LeakyReLU(),
+            # Conv 1
+            nn.Conv2d(3, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(64),
+            nn.Conv2d(64, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(64),
+            nn.MaxPool2d(kernel_size=2),
+            
+            # Conv 2
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(128),
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(128),
+            nn.MaxPool2d(kernel_size=2),
+            
+            # Conv 3
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(256),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(),
             nn.BatchNorm2d(256),
             nn.MaxPool2d(kernel_size=2),
-            nn.Dropout2d(p=0.35),
 
-            # CNN Block 
-            nn.Conv2d(256, 128, kernel_size=3, padding=1),
-            nn.LeakyReLU(),
-            nn.BatchNorm2d(128),
-            # nn.MaxPool2d(kernel_size=2),
-            nn.Dropout2d(p=0.35),
+            # Conv 4
+            nn.Conv2d(256, 512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(512),
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(512),
+            nn.MaxPool2d(kernel_size=2),
 
-            # CNN Block 
-            nn.Conv2d(128, 64, kernel_size=3, padding=1),
-            nn.LeakyReLU(),
-            nn.BatchNorm2d(64),
-            # nn.MaxPool2d(kernel_size=2),
-            nn.Dropout2d(p=0.35),
-
+            nn.AvgPool2d(kernel_size=2),
+            
             # Flatten
             nn.Flatten(start_dim=1),    # to reshape with considering batch size
-            
-            # Linear Block
-            nn.Linear(16384, 256),
+            nn.Linear(512, 256),
             nn.ReLU(),
-            nn.Dropout(0.2),
+            nn.Dropout(0.7),
+            nn.Linear(256, 10)
 
-            # Linear Block
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Dropout(0.2),
+            # # CNN Block 
+            # nn.Conv2d(3, 256, kernel_size=3, padding=1),
+            # nn.LeakyReLU(),
+            # nn.BatchNorm2d(256),
+            # # nn.MaxPool2d(kernel_size=2),
+            # nn.Dropout2d(p=0.35),
+
+            # # CNN Block 
+            # nn.Conv2d(256, 128, kernel_size=3, padding=1),
+            # nn.LeakyReLU(),
+            # nn.BatchNorm2d(128),
+            # # nn.MaxPool2d(kernel_size=2),
+            # nn.Dropout2d(p=0.35),
+
+            # # CNN Block 
+            # nn.Conv2d(128, 64, kernel_size=3, padding=1),
+            # nn.LeakyReLU(),
+            # nn.BatchNorm2d(64),
+            # # nn.MaxPool2d(kernel_size=2),
+            # nn.Dropout2d(p=0.35),
+
+            # # Flatten
+            # nn.Flatten(start_dim=1),    # to reshape with considering batch size
             
-            # Output Block
-            nn.Linear(256, 10),
-            # nn.Softmax(dim=0)           # nn.CrossEntropyLoss already includes softmax
+            # # Linear Block
+            # nn.Linear(16384, 256),
+            # nn.ReLU(),
+            # nn.Dropout(0.2),
+
+            # # Linear Block
+            # nn.Linear(256, 256),
+            # nn.ReLU(),
+            # nn.Dropout(0.2),
+            
+            # # Output Block
+            # nn.Linear(256, 10),
+            # # nn.Softmax(dim=0)           # nn.CrossEntropyLoss already includes softmax
         )
     
     def forward(self, x):
