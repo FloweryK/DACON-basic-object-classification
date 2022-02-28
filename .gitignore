@@ -1,4 +1,5 @@
 # datasets
+runs/
 data/
 *.jpg
 
@@ -6,3 +7,5 @@ data/
 __pycache__
 
 .vscode
+
+
