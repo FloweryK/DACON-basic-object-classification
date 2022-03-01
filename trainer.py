@@ -98,18 +98,21 @@ class Trainer:
 
 if __name__ == "__main__":
     from torch.utils.data import random_split
-    from models.CNNv1 import Model
-    from dataset import ObjectDataset
     from config import DatasetConfig, TrainerConfig
+    from models.CNNv1 import Model, transform
+    from dataset import ObjectDataset
 
+    # model
     model = Model()
-    dataset = ObjectDataset(DatasetConfig())
+
+    # trainset, valiset, testset
+    dataset = ObjectDataset(DatasetConfig(), transform=transform)
     n_train = int(len(dataset) * 0.8)
     n_vali = int(len(dataset) * 0.1)
     n_test = len(dataset) - (n_train + n_vali)
-
     trainset, valiset, testset = random_split(dataset, [n_train, n_vali, n_test])
 
+    # run training
     trainer = Trainer(TrainerConfig, model, trainset, valiset, testset)
     trainer.run()
     

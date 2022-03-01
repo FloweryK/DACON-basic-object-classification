@@ -1,34 +1,12 @@
 import os
-import cv2
-import numpy as np
+from PIL import Image
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 
 
-def t(img):
-    random_choice = T.RandomChoice([
-        T.RandomResizedCrop((32, 32)),
-        T.RandomHorizontalFlip(p=1),
-        T.RandomVerticalFlip(p=1),
-        T.RandomAffine(degrees=30, translate=(0.2, 0.2)),
-        T.ColorJitter(brightness=0.05, contrast=0.05),
-        T.RandomGrayscale(p=1),
-    ])
-
-    transform = T.Compose([
-        T.ToPILImage(),
-        random_choice, 
-        random_choice, 
-        random_choice, 
-        random_choice, 
-        lambda x: np.array(x)
-    ])
-    return transform(img)
-
-
 class ObjectDataset(Dataset):
-    def __init__(self, config):
+    def __init__(self, config, transform):
         self.data = {}
 
         def load_data():
@@ -40,28 +18,16 @@ class ObjectDataset(Dataset):
                 class_dir = os.path.join(config.data_dir, class_name)
 
                 for file_name in os.listdir(class_dir):
-                    # get file path
+                    # read img
                     file_path = os.path.join(class_dir, file_name)
+                    img = Image.open(file_path)
 
-                    # read img and change from int to float
-                    img_org = cv2.imread(file_path)
+                    # transform
+                    img = transform(img)
 
-                    for j in range(config.aug_ratio):
-                        # (optional) data augmentation
-                        img = t(img_org) if (config.aug_ratio > 1) and (j > 0) else img_org
-
-                        # (optional) normalize
-                        img = img.astype(np.float64)
-                        if config.is_norm:
-                            img -= np.array(config.norm_mean)
-                            img *= 1 / np.array(config.norm_std)
-                        
-                        # (optional) roll axis
-                        img = np.moveaxis(img, -1, 0)
-
-                        # save img to dataset
-                        self.data[i] = (img, target)
-                        i += 1
+                    # save img to dataset
+                    self.data[i] = (img, target)
+                    i += 1
         
         print("loading data from:", config.data_dir)
         load_data()
@@ -77,10 +43,22 @@ class ObjectDataset(Dataset):
 
 
 if __name__ == "__main__":
+    from torch.utils.data import DataLoader
     from config import DatasetConfig
 
-    trainset = ObjectDataset(DatasetConfig())
-    img, target = trainset[0]
-    print(len(trainset))
-    print(img.shape)
-    print(target)
+    # proper transform should be provided with each model
+    def transform(img):
+        t = T.Compose([
+            T.ToTensor(),
+            T.Normalize(mean=[.0, .0, .0], std=[255., 255., 255.]),
+        ])
+        return t(img)
+
+    dataset = ObjectDataset(DatasetConfig(), transform=transform)
+    dataloader = DataLoader(dataset, batch_size=64)
+    for imgs, target in dataloader:
+        print(f'data sample: {imgs[0]}')
+        print(f'data sample shape: {imgs[0].shape}')
+        print(f'data sample target: {target}')
+        print(f'dataset size: {len(dataset)}')
+        print(f'dataloader size: {len(dataloader)}')

@@ -1,4 +1,13 @@
 import torch.nn as nn
+from torchvision import transforms as T
+
+def transform(img):
+    t = T.Compose([
+        T.ToTensor(),
+        T.Normalize(mean=[.0, .0, .0], std=[255., 255., 255.]),
+    ])
+    return t(img)
+
 
 class Model(nn.Module):
     def __init__(self):
@@ -58,7 +67,6 @@ class Model(nn.Module):
         )
     
     def forward(self, x):
-        x = x.float()
         x = self.cnn1(x)
         x = self.cnn2(x)
         x = self.cnn3(x)
@@ -70,12 +78,15 @@ class Model(nn.Module):
 
 
 if __name__ == "__main__":
+    import sys
+    sys.path.append('.')
+
     from torch.utils.data import DataLoader
     from dataset import ObjectDataset
     from config import DatasetConfig
     
     model = Model()
-    dataset = ObjectDataset(DatasetConfig())
+    dataset = ObjectDataset(DatasetConfig(), transform=transform)
     dataloader = DataLoader(dataset, batch_size=64, num_workers=0)
 
     for imgs, targets in dataloader:
