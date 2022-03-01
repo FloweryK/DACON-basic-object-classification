@@ -88,6 +88,10 @@ class Trainer:
 
                         img_grid = make_grid(weights, nrow=16)
                         self.writer.add_image(f"{name}", img_grid, epoch)
+                
+                # save if this is the last epoch
+                if epoch == self.config.num_epochs-1:
+                    torch.save(self.model.state_dict(), self.config.save_path)
         
         # run 
         for epoch in range(self.config.num_epochs):

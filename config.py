@@ -4,9 +4,10 @@ import torch
 class DatasetConfig:
     data_dir = os.path.join("data", "train")
     classes = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "deer": 4, "dog": 5, "frog": 6, "horse": 7, "ship": 8, "truck": 9}
+    preload = True
     aug_ratio = 1
     print('DatasetConfig')
-    print(f'aug_ratio: {aug_ratio}')
+    print(f'aug_ratio: {aug_ratio}\n')
 
 
 class TrainerConfig:
@@ -18,6 +19,7 @@ class TrainerConfig:
     num_epochs = 100
     shuffle=True
     pin_memory=True
+    save_path='./model.pt'
 
     print('TrainerConfig')
     print(f'device: {device}')

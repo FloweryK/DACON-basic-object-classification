@@ -8,29 +8,11 @@ from torchvision import transforms as T
 class ObjectDataset(Dataset):
     def __init__(self, config, transform):
         self.data = {}
-
-        def load_data():
-            # index for each data
-            i = 0
-
-            pbar = tqdm(enumerate(config.classes.items()), total=len(config.classes))
-            for (_, (class_name, target)) in pbar:
-                class_dir = os.path.join(config.data_dir, class_name)
-
-                for file_name in os.listdir(class_dir):
-                    # read img
-                    file_path = os.path.join(class_dir, file_name)
-                    img = Image.open(file_path)
-
-                    # transform
-                    img = transform(img)
-
-                    # save img to dataset
-                    self.data[i] = (img, target)
-                    i += 1
+        self.config = config
+        self.transform = transform
         
         print("loading data from:", config.data_dir)
-        load_data()
+        self.load_data()
 
         # save length to return the dataset size
         self.len = len(self.data)
@@ -39,7 +21,40 @@ class ObjectDataset(Dataset):
         return self.len
     
     def __getitem__(self, index):
-        return self.data[index]
+        if self.config.preload:
+            return self.data[index]
+        else:
+            file_path, target = self.data[index]
+            img = self.load_image(file_path)
+            return (img, target)
+    
+    def load_image(self, file_path):
+        img = Image.open(file_path)
+        img = self.transform(img)
+        return img
+    
+    def load_data(self):
+        # index for each data
+        i = 0
+
+        pbar = tqdm(enumerate(self.config.classes.items()), total=len(self.config.classes))
+        for (_, (class_name, target)) in pbar:
+            class_dir = os.path.join(self.config.data_dir, class_name)
+
+            for file_name in os.listdir(class_dir):
+                file_path = os.path.join(class_dir, file_name)
+
+                if self.config.preload:
+                    # if preload, read img
+                    img = self.load_image(file_path)
+
+                    # save img to dataset
+                    self.data[i] = (img, target)
+                else :
+                    # if not preload, only save path
+                    self.data[i] = (file_path, target)
+
+                i += 1
 
 
 if __name__ == "__main__":
