@@ -7,6 +7,7 @@ class DatasetConfig:
     preload = True
     aug_ratio = 1
     print('DatasetConfig')
+    print(f'preload: {preload}')
     print(f'aug_ratio: {aug_ratio}\n')
 
 
