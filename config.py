@@ -5,16 +5,8 @@ class DatasetConfig:
     data_dir = os.path.join("data", "train")
     classes = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "deer": 4, "dog": 5, "frog": 6, "horse": 7, "ship": 8, "truck": 9}
     aug_ratio = 1
-    is_norm = True
-    norm_mean = [0., 0., 0.]
-    norm_std = [255., 255., 255.]
-    # norm_mean = [113.86283869, 122.93301916, 125.26884795]
-    # norm_std = [66.46033586, 61.90929531, 62.5340599]
     print('DatasetConfig')
     print(f'aug_ratio: {aug_ratio}')
-    print(f'is_norm: {is_norm}')
-    print(f'norm_mean: {norm_mean}')
-    print(f'norm_std: {norm_std}\n')
 
 
 class TrainerConfig:
