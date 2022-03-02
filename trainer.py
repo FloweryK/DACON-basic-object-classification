@@ -84,9 +84,10 @@ class Trainer:
                 for name, module in self.model.named_modules():
                     if isinstance(module, nn.Conv2d):
                         weights = module.weight.detach()
-                        weights = weights.abs().mean(axis=1).view(-1, 1, *weights.shape[2:])
+                        weights_mean = weights.abs().mean(axis=1)
+                        weights_norm = (254/weights_mean.max())*weights_mean.view(-1, 1, *weights.shape[2:])
 
-                        img_grid = make_grid(weights, nrow=16)
+                        img_grid = make_grid(weights_norm, nrow=16)
                         self.writer.add_image(f"{name}", img_grid, epoch)
                 
                 # save if this is the last epoch
@@ -103,7 +104,7 @@ class Trainer:
 if __name__ == "__main__":
     from torch.utils.data import random_split
     from config import DatasetConfig, TrainerConfig
-    from models.resnet import Model, transform
+    from models.CNNv1 import Model, transform
     from dataset import ObjectDataset
 
     # model
