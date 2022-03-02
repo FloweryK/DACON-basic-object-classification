@@ -4,60 +4,53 @@ from torchvision import transforms as T
 def transform(img):
     t = T.Compose([
         T.ToTensor(),
-        # T.Normalize(mean=[.0, .0, .0], std=[255., 255., 255.]),
+        T.Normalize(mean=[.0, .0, .0], std=[255., 255., 255.]),
     ])
     return t(img)
+
+
+class ConvBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, padding):
+        super().__init__()
+        self.layer = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding),
+            nn.ReLU(),
+            nn.BatchNorm2d(out_channels),
+        )
+    
+    def forward(self, x):
+        return self.layer(x)
 
 
 class Model(nn.Module):
     def __init__(self):
         super().__init__()
         self.cnn1 = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(64),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(64),
-            nn.MaxPool2d(kernel_size=2),
+            ConvBlock(3, 64, kernel_size=5, padding=3),
+            ConvBlock(64, 64, kernel_size=5, padding=3),
+            nn.MaxPool2d(kernel_size=2)
         )
-
         self.cnn2 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(128),
-            nn.Conv2d(128, 128, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(128),
-            nn.MaxPool2d(kernel_size=2),
+            ConvBlock(64, 128, kernel_size=5, padding=3),
+            ConvBlock(128, 128, kernel_size=5, padding=3),
+            nn.MaxPool2d(kernel_size=2)
         )
-
         self.cnn3 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(256),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(256),
-            nn.MaxPool2d(kernel_size=2),
+            ConvBlock(128, 256, kernel_size=5, padding=3),
+            ConvBlock(256, 256, kernel_size=5, padding=3),
+            nn.MaxPool2d(kernel_size=2)
         )
-
         self.cnn4 = nn.Sequential(
-            nn.Conv2d(256, 512, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(512),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(512),
+            ConvBlock(256, 512, kernel_size=5, padding=3),
+            ConvBlock(512, 512, kernel_size=5, padding=3),
             nn.MaxPool2d(kernel_size=2),
-
-            nn.AvgPool2d(kernel_size=2),
+            nn.MaxPool2d(kernel_size=2)
         )
 
         self.linear1 = nn.Sequential(    
             # Flatten
             nn.Flatten(start_dim=1),    # to reshape with considering batch size
-            nn.Linear(512, 256),
+            nn.Linear(2048, 256),
             nn.ReLU(),
             nn.Dropout(0.7),
         )

@@ -1,7 +1,6 @@
 import os
 from PIL import Image
 from tqdm import tqdm
-import torch.nn as nn
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 
@@ -38,7 +37,8 @@ class ObjectDataset(Dataset):
     
     def load_image(self, file_path):
         img = Image.open(file_path)
-        img = random_transform(img)
+        if self.config.augment:
+            img = random_transform(img)
         img = self.transform(img)
         
         return img

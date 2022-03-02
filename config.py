@@ -5,8 +5,10 @@ class DatasetConfig:
     data_dir = os.path.join("data", "train")
     classes = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "deer": 4, "dog": 5, "frog": 6, "horse": 7, "ship": 8, "truck": 9}
     preload = True
+    augment = False
     print('DatasetConfig')
     print(f'preload: {preload}')
+    print(f'augment: {augment}')
     print('\n')
 
 
@@ -16,7 +18,7 @@ class TrainerConfig:
     weight_decay = 0.001
     batch_size = 64
     num_workers = 0
-    num_epochs = 100 * 4
+    num_epochs = 100
     shuffle=True
     pin_memory=True
     save_path='./model.pt'
