@@ -4,7 +4,7 @@ from torchvision import transforms as T
 def transform(img):
     t = T.Compose([
         T.ToTensor(),
-        T.Normalize(mean=[.0, .0, .0], std=[255., 255., 255.]),
+        # T.Normalize(mean=[.0, .0, .0], std=[255., 255., 255.]),
     ])
     return t(img)
 
