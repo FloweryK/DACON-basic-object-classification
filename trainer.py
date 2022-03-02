@@ -103,13 +103,11 @@ class Trainer:
 if __name__ == "__main__":
     from torch.utils.data import random_split
     from config import DatasetConfig, TrainerConfig
-    from torchvision.models import resnet18
-    from models.resnet import transform
-    # from models.CNNv1 import Model, transform
+    from models.resnet import Model, transform
     from dataset import ObjectDataset
 
     # model
-    model = resnet18(pretrained=False)
+    model = Model()
 
     # trainset, valiset, testset
     dataset = ObjectDataset(DatasetConfig(), transform=transform)
