@@ -25,81 +25,82 @@ class Trainer:
         self.writer = SummaryWriter()
     
     def run(self):
-        def run_epoch(epoch, dataset, mode):
-            # flag for train mode or not
-            is_train = mode == "train"
-            n_correct = 0
-            n_false = 0
-
-            # set dataloader
-            dataloader = DataLoader(
-                dataset, 
-                batch_size=self.config.batch_size,
-                num_workers=self.config.num_workers,
-                shuffle=self.config.shuffle,
-                pin_memory=self.config.pin_memory,
-            )
-
-            # iterate through dataloader
-            losses = []
-            pbar = tqdm(enumerate(dataloader), total=len(dataloader))
-            for it, (imgs, targets) in pbar:
-                # put data into proper deivce
-                imgs = imgs.to(self.config.device)
-                targets = targets.to(self.config.device)
-
-                # forward the model
-                with torch.set_grad_enabled(is_train):
-                    prob = self.model(imgs)
-                    loss = F.cross_entropy(prob.view(-1, prob.size(-1)), targets.view(-1))
-                    losses.append(loss.item())
-
-                    # check metrics
-                    __check = torch.argmax(prob.view(-1, prob.size(-1)), axis=1) == targets.view(-1)
-                    __correct = torch.sum(__check)
-                    n_correct += __correct.item()
-                    n_false += len(__check) - __correct.item()
-                
-                # if training, update parameters
-                if is_train:
-                    self.model.zero_grad()
-                    loss.backward()
-                    self.optimizer.step()
-                
-                # update desciption on progress bar
-                loss_value = loss.item() if is_train else float(np.mean(losses))
-                acc = n_correct / (n_correct + n_false)
-                pbar.set_description(f'epoch {epoch} iter {it}: {mode} loss {loss_value:.5f} acc {acc:.5f}')
-                
-            # update tensorboard
-            self.writer.add_scalar(f'Loss/{mode}', loss_value, epoch)
-            self.writer.add_scalar(f'Acc/{mode}', acc, epoch)
-
-            if is_train:
-                # if this is the first epoch, save graph
-                if epoch == 0:
-                    self.writer.add_graph(self.model, imgs)
-
-                # update kernel visualizations
-                for name, module in self.model.named_modules():
-                    if isinstance(module, nn.Conv2d):
-                        weights = module.weight.detach()
-                        weights_mean = weights.abs().mean(axis=1)
-                        weights_norm = (254/weights_mean.max())*weights_mean.view(-1, 1, *weights.shape[2:])
-
-                        img_grid = make_grid(weights_norm, nrow=16)
-                        self.writer.add_image(f"{name}", img_grid, epoch)
-                
-                # save if this is the last epoch
-                if epoch == self.config.num_epochs-1:
-                    torch.save(self.model.state_dict(), self.config.save_path)
-        
         # run 
         for epoch in range(self.config.num_epochs):
-            run_epoch(epoch, self.trainset, "train")
-            run_epoch(epoch, self.valiset, "vali")
-            run_epoch(epoch, self.testset, "test")
-                
+            self.run_epoch(epoch, self.trainset, "train")
+            self.run_epoch(epoch, self.valiset, "vali")
+            self.run_epoch(epoch, self.testset, "test")
+    
+    def run_epoch(self, epoch, dataset, mode):
+        # flag for train mode or not
+        is_train = mode == "train"
+        n_correct = 0
+        n_false = 0
+
+        # set dataloader
+        dataloader = DataLoader(
+            dataset, 
+            batch_size=self.config.batch_size,
+            num_workers=self.config.num_workers,
+            shuffle=self.config.shuffle,
+            pin_memory=self.config.pin_memory,
+        )
+
+        # iterate through dataloader
+        losses = []
+        pbar = tqdm(enumerate(dataloader), total=len(dataloader))
+        for it, (imgs, targets) in pbar:
+            # put data into proper deivce
+            imgs = imgs.to(self.config.device)
+            targets = targets.to(self.config.device)
+
+            # forward the model
+            with torch.set_grad_enabled(is_train):
+                prob = self.model(imgs)
+                loss = F.cross_entropy(prob.view(-1, prob.size(-1)), targets.view(-1))
+                losses.append(loss.item())
+
+                # check metrics
+                __check = torch.argmax(prob.view(-1, prob.size(-1)), axis=1) == targets.view(-1)
+                __correct = torch.sum(__check)
+                n_correct += __correct.item()
+                n_false += len(__check) - __correct.item()
+            
+            # if training, update parameters
+            if is_train:
+                self.model.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            
+            # update desciption on progress bar
+            loss_value = loss.item() if is_train else float(np.mean(losses))
+            acc = n_correct / (n_correct + n_false)
+            pbar.set_description(f'epoch {epoch} iter {it}: {mode} loss {loss_value:.5f} acc {acc:.5f}')
+            
+        # update tensorboard
+        self.writer.add_scalar(f'Loss/{mode}', loss_value, epoch)
+        self.writer.add_scalar(f'Acc/{mode}', acc, epoch)
+
+        if is_train:
+            # if this is the first epoch, save graph
+            if epoch == 0:
+                self.writer.add_graph(self.model, imgs)
+
+            # update kernel visualizations
+            for name, module in self.model.named_modules():
+                if isinstance(module, nn.Conv2d):
+                    weights = module.weight.detach()
+                    weights_mean = weights.abs().mean(axis=1)
+                    weights_norm = weights_mean.view(-1, 1, *weights.shape[2:])
+                    # weights_norm = (254/weights_mean.max())*weights_mean.view(-1, 1, *weights.shape[2:])
+
+                    img_grid = make_grid(weights_norm, nrow=16)
+                    self.writer.add_image(f"{name}", img_grid, epoch)
+            
+            # save if this is the last epoch
+            if epoch == self.config.num_epochs-1:
+                torch.save(self.model.state_dict(), self.config.save_path)
+            
 
 if __name__ == "__main__":
     from torch.utils.data import random_split
