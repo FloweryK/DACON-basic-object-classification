@@ -14,8 +14,8 @@ class DatasetConfig:
 
 class TrainerConfig:
     device = "cuda" if torch.cuda.is_available() else 'cpu'
-    lr = 3e-4
-    weight_decay = 0.001
+    lr = 1e-4
+    weight_decay = 0.005
     batch_size = 64
     num_workers = 0
     num_epochs = 100

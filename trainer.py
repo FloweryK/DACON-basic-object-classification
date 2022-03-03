@@ -105,7 +105,7 @@ class Trainer:
 if __name__ == "__main__":
     from torch.utils.data import random_split
     from config import DatasetConfig, TrainerConfig
-    from models.CNNv1 import Model, transform
+    from models.CNNv4 import Model, transform
     from dataset import ObjectDataset
 
     # model

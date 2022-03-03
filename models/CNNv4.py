@@ -10,7 +10,7 @@ def transform(img):
     return t(img)
 
 
-class ConvBlock(nn.Module):
+class VGGBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding):
         super().__init__()
         self.layer = nn.Sequential(
@@ -30,69 +30,64 @@ class Model(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Sequential(
-            ConvBlock(3, 64, kernel_size=3, padding=1),
-            nn.MaxPool2d(kernel_size=2) # 16 * 16
+            VGGBlock(3, 64, kernel_size=3, padding=1),
+            nn.MaxPool2d(kernel_size=2), # 16 * 16
+            nn.Dropout(0.2),
         )
         self.conv2 = nn.Sequential(
-            ConvBlock(64, 128, kernel_size=3, padding=1),
-            nn.MaxPool2d(kernel_size=2) # 8 * 8
+            VGGBlock(64, 128, kernel_size=3, padding=1),
+            nn.MaxPool2d(kernel_size=2), # 8 * 8
+            nn.Dropout(0.3),
+            
         )
         self.conv3 = nn.Sequential(
-            ConvBlock(128, 256, kernel_size=3, padding=1),
-            nn.MaxPool2d(kernel_size=2) # 4 * 4
-        )
-        self.conv4 = nn.Sequential(
-            ConvBlock(256, 512, kernel_size=3, padding=1),
-            nn.MaxPool2d(kernel_size=2) # 2 * 2
+            VGGBlock(128, 256, kernel_size=3, padding=1),
+            nn.MaxPool2d(kernel_size=2), # 4 * 4
+            nn.Dropout(0.4),
         )
 
         self.linear1 = nn.Sequential(
-            nn.AvgPool2d(kernel_size=2),
             nn.Flatten(start_dim=1),
-            nn.Linear(8*8*64, 256),
+            nn.Linear(16*16*64, 256),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.2),
             nn.Linear(256, 10)
         )
         self.linear2 = nn.Sequential(
-            nn.AvgPool2d(kernel_size=2),
             nn.Flatten(start_dim=1),
-            nn.Linear(4*4*128, 256),
+            nn.Linear(8*8*128, 256),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.2),
             nn.Linear(256, 10)
         )
         self.linear3 = nn.Sequential(
-            nn.AvgPool2d(kernel_size=2),
             nn.Flatten(start_dim=1),
-            nn.Linear(2*2*256, 256),
+            nn.Linear(4*4*256, 128),
             nn.ReLU(),
+            nn.BatchNorm1d(128),
             nn.Dropout(0.5),
-            nn.Linear(256, 10)
-        )
-        self.linear4 = nn.Sequential(
-            nn.AvgPool2d(kernel_size=2),
-            nn.Flatten(start_dim=1),
-            nn.Linear(1*1*512, 256),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(256, 10)
+            nn.Linear(128, 10)
         )
     
     def forward(self, x):
+        # x = self.conv1(x)
+        # x1 = self.linear1(x)
+
+        # x = self.conv2(x)
+        # x2 = self.linear2(x)
+
+        # x = self.conv3(x)
+        # x3 = self.linear3(x)
+
+        # x = self.conv4(x)
+        # x4 = self.linear4(x)
+
+        # x = torch.mean(torch.stack([x1, x2, x3, x4]), axis=0)
+
         x = self.conv1(x)
-        x1 = self.linear1(x)
-
         x = self.conv2(x)
-        x2 = self.linear2(x)
-
         x = self.conv3(x)
-        x3 = self.linear3(x)
-
-        x = self.conv4(x)
-        x4 = self.linear4(x)
-
-        x = torch.mean(torch.stack([x1, x2, x3, x4]), axis=0)
+        x = self.linear3(x)
 
         return x
 
