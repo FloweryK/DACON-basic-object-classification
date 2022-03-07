@@ -1,89 +1,106 @@
 import os
-from PIL import Image
+import random
 from tqdm import tqdm
+from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms as T
+
+
+class ObjectDataset(Dataset):
+    def __init__(self, paths, transform, augment=None):
+        super().__init__()
+
+        self.data = {}
+        self.paths = paths
+        self.augment = augment
+        self.transform = transform
+
+        self.load_image()
+        self.len = len(self.data)
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def load_image(self):
+        pbar = tqdm(enumerate(self.paths), total=len(self.paths))
+        for (i, (path, target)) in pbar:
+            img = Image.open(path)
+
+            if self.augment:
+                for j in range(self.augment):
+                    _img = random_transform(img)
+                    _img = self.transform(img)
+                    self.data[i*self.augment+j] = (_img, target)
+            else:
+                img = self.transform(img)
+                self.data[i] = (img, target)
+
 
 def random_transform(img):
     t = T.Compose([
         T.RandomHorizontalFlip(),
-        T.RandomRotation(degrees=(0, 30))
+        T.RandomRotation(degrees=(0, 30)),
     ])
     return t(img)
 
 
-class ObjectDataset(Dataset):
-    def __init__(self, config, transform):
-        self.data = {}
-        self.config = config
-        self.transform = transform
-        
-        print("loading data from:", config.data_dir)
-        self.load_data()
-
-        # save length to return the dataset size
-        self.len = len(self.data)
+def load_datasets(transform, augment=4):
+    # classes
+    classes = {
+        "airplane": 0, 
+        "automobile": 1, 
+        "bird": 2, 
+        "cat": 3, 
+        "deer": 4, 
+        "dog": 5, 
+        "frog": 6, 
+        "horse": 7, 
+        "ship": 8, 
+        "truck": 9
+    }
     
-    def __len__(self):
-        return self.len
-    
-    def __getitem__(self, index):
-        if self.config.preload:
-            return self.data[index]
-        else:
-            file_path, target = self.data[index]
-            img = self.load_image(file_path)
-            return (img, target)
-    
-    def load_image(self, file_path):
-        img = Image.open(file_path)
-        if self.config.augment:
-            img = random_transform(img)
-        img = self.transform(img)
-        
-        return img
-    
-    def load_data(self):
-        # index for each data
-        i = 0
+    # dataet path
+    data_dir = os.path.join('data', 'train')
 
-        pbar = tqdm(enumerate(self.config.classes.items()), total=len(self.config.classes))
-        for (_, (class_name, target)) in pbar:
-            class_dir = os.path.join(self.config.data_dir, class_name)
+    # load file paths
+    paths = []
+    for class_name in classes:
+        class_dir = os.path.join(data_dir, class_name)
 
-            for file_name in os.listdir(class_dir):
-                file_path = os.path.join(class_dir, file_name)
+        for file_name in os.listdir(class_dir):
+            img_path = os.path.join(class_dir, file_name)
+            target = classes[class_name]
+            paths.append((img_path, target))
 
-                if self.config.preload:
-                    # if preload, read img
-                    img = self.load_image(file_path)
+    # split into train, test, vali paths
+    random.shuffle(paths)
+    n_train = int(len(paths)*0.8)
+    n_vali = int(len(paths)*0.1)
+    paths_train = paths[:n_train]
+    paths_vali = paths[n_train:n_train+n_vali]
+    paths_test = paths[n_train+n_vali:]
 
-                    # save img to dataset
-                    self.data[i] = (img, target)
-                else :
-                    # if not preload, only save path
-                    self.data[i] = (file_path, target)
-
-                i += 1
+    # create ObjectDatsaet object
+    trainset = ObjectDataset(paths_train, transform=transform, augment=augment)
+    valiset = ObjectDataset(paths_vali, transform=transform)
+    testset = ObjectDataset(paths_test, transform=transform)
+    return trainset, valiset, testset
 
 
 if __name__ == "__main__":
-    from torch.utils.data import DataLoader
-    from config import DatasetConfig
-
     # proper transform should be provided with each model
     def transform(img):
         t = T.Compose([
             T.ToTensor(),
-            T.Normalize(mean=[.0, .0, .0], std=[255., 255., 255.]),
         ])
         return t(img)
-
-    dataset = ObjectDataset(DatasetConfig(), transform=transform)
-    dataloader = DataLoader(dataset, batch_size=64)
-    for imgs, target in dataloader:
-        print(f'data sample: {imgs[0]}')
-        print(f'data sample shape: {imgs[0].shape}')
-        print(f'data sample target: {target}')
-        print(f'dataset size: {len(dataset)}')
-        print(f'dataloader size: {len(dataloader)}')
+    
+    # load datasets
+    trainset, valiset, testset = load_datasets(transform=transform, augment=3)
+    
+    print(len(trainset))
+    print(len(valiset))
+    print(len(testset))

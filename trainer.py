@@ -9,12 +9,9 @@ from tqdm import tqdm
 
 
 class Trainer:
-    def __init__(self, config, model, trainset, valiset, testset):
+    def __init__(self, config, model):
         self.config = config
         self.model = model
-        self.trainset = trainset
-        self.valiset = valiset
-        self.testset = testset
 
         # TODO: locate this line to proper location
         self.model = self.model.to(self.config.device)
@@ -23,13 +20,6 @@ class Trainer:
             lr=self.config.lr, 
             weight_decay=self.config.weight_decay)
         self.writer = SummaryWriter()
-    
-    def run(self):
-        # run 
-        for epoch in range(self.config.num_epochs):
-            self.run_epoch(epoch, self.trainset, "train")
-            self.run_epoch(epoch, self.valiset, "vali")
-            self.run_epoch(epoch, self.testset, "test")
     
     def run_epoch(self, epoch, dataset, mode):
         # flag for train mode or not
@@ -98,27 +88,28 @@ class Trainer:
                     self.writer.add_image(f"{name}", img_grid, epoch)
             
             # save if this is the last epoch
-            if epoch == self.config.num_epochs-1:
+            # if epoch == self.config.num_epochs-1:
+            if self.config.save_model:
                 torch.save(self.model.state_dict(), self.config.save_path)
             
 
 if __name__ == "__main__":
-    from torch.utils.data import random_split
-    from config import DatasetConfig, TrainerConfig
+    from config import TrainerConfig
     from models.CNNv4 import Model, transform
-    from dataset import ObjectDataset
+    from dataset2 import load_datasets
+
+    # config
+    trainer_config = TrainerConfig()
 
     # model
     model = Model()
 
-    # trainset, valiset, testset
-    dataset = ObjectDataset(DatasetConfig(), transform=transform)
-    n_train = int(len(dataset) * 0.8)
-    n_vali = int(len(dataset) * 0.1)
-    n_test = len(dataset) - (n_train + n_vali)
-    trainset, valiset, testset = random_split(dataset, [n_train, n_vali, n_test])
+    # load datasets
+    trainset, valiset, testset = load_datasets(transform=transform, augment=4)
 
     # run training
-    trainer = Trainer(TrainerConfig, model, trainset, valiset, testset)
-    trainer.run()
-    
+    trainer = Trainer(trainer_config, model)
+    for epoch in range(trainer_config.num_epochs):
+        trainer.run_epoch(epoch, trainset, "train")
+        trainer.run_epoch(epoch, valiset, "vali")
+        trainer.run_epoch(epoch, testset, "test")

@@ -1,27 +1,18 @@
 import os
 import torch
 
-class DatasetConfig:
-    data_dir = os.path.join("data", "train")
-    classes = {"airplane": 0, "automobile": 1, "bird": 2, "cat": 3, "deer": 4, "dog": 5, "frog": 6, "horse": 7, "ship": 8, "truck": 9}
-    preload = True
-    augment = False
-    print('DatasetConfig')
-    print(f'preload: {preload}')
-    print(f'augment: {augment}')
-    print('\n')
-
 
 class TrainerConfig:
     device = "cuda" if torch.cuda.is_available() else 'cpu'
     lr = 1e-4
-    weight_decay = 0.005
+    weight_decay = 0.1
     batch_size = 64
     num_workers = 0
     num_epochs = 100
     shuffle=True
     pin_memory=True
     save_path='./model.pt'
+    save_model=True
 
     print('TrainerConfig')
     print(f'device: {device}')
